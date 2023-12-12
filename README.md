@@ -1,7 +1,7 @@
 # MatchGame
 C# Assignment matching game
 
-  Task 1 - Create a label that keeps track of the amount of times an incorrect matches was attempted.
+  Task 1 - Create a label that keeps track of the amount of times an incorrect matche was attempted.
   
   Task 2 - Create an input that lets the user type in the username.
   
