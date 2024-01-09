@@ -1,5 +1,6 @@
 ﻿@page "/"
 @using System.Timers
+@using System.Net.Http
 
 <style>
     .container {
@@ -29,11 +30,17 @@
     </div>
     <div class="row">
         <h2>Matches found: @matchesFound</h2>
+        <label>Incorrect Matches: @incorrectMatches </label>
+        <label>Username:</label>
+        <input @bind-value="username"/>
     </div>
     <div class="row">
         <h2>Time: @timeDisplay</h2>
+        <button @onclick=@PostResults>Post Result</button>
+        <button @onclick=@SetUpGame>Play Again</button>
     </div>
 </div>
+
 @code{
     List<string> animalEmoji = new List<string>()
     {
@@ -49,9 +56,13 @@
 
     List<string> shuffledAnimals = new List<string>();
     int matchesFound = 0;
+    int incorrectMatches = 0;
     Timer timer;
     int tenthsOfSecondsElapsed = 0;
     string timeDisplay;
+    string? username;
+    private static HttpClient client = new();
+
     protected override void OnInitialized()
     {
         timer = new Timer(100);
@@ -67,6 +78,7 @@
             .ToList();
         matchesFound = 0;
         tenthsOfSecondsElapsed = 0;
+        timeDisplay = (tenthsOfSecondsElapsed / 10F).ToString("0.0s");
     }
 
     string lastAnimalFound = string.Empty;
@@ -95,13 +107,13 @@
             {
                 timer.Stop();
                 timeDisplay += " - Play Again?";
-                SetUpGame();
             }
         } else
         {
             //User selected a pair that don't match
             //Reset selection.
             lastAnimalFound = string.Empty;
+            incorrectMatches++;
         }
     }
 
@@ -114,5 +126,12 @@
                 .ToString("0.0s");
             StateHasChanged();
         });
+    }
+
+    private async void PostResults() {
+        Uri link = new Uri("https://keepthescore.com/api/xsvtpbbxrsvfe/player/");
+        HttpRequestMessage message = new HttpRequestMessage(HttpMethod.Post, link);
+        message.Content = JsonContent.Create(new { name = username, score = tenthsOfSecondsElapsed/10F*1000 });
+        HttpResponseMessage response = await client.SendAsync(message);
     }
 }
